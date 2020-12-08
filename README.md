@@ -11,6 +11,9 @@ The board also provides a total of 86 3.3V TTL compatible I/O pins, some of whic
 2. Moving the RC network on pin 73.
 3. Removing the resistors on pins 26, 27, 80, and 81.
 
+A web page that is a good summary of this board can be found at:
+http://land-boards.com/blwiki/index.php?title=Cyclone_II_EP2C5_Mini_Dev_Board
+
 **Custom carrier board**
 
 The main functions of the custom carrier board are to provide: 
