@@ -1,0 +1,743 @@
+0001   0000             
+0002   0000             ; various constants
+0003   0000             #include "../includes/reuPlusDefs.asm"
+0001+  0000             
+0002+  0000             #ifndef DEFS
+0003+  0000             
+0004+  0000             #define DEFS
+0005+  0000             
+0006+  0000             ; REU equates
+0007+  0000             REU_STAT_REG		= $DF00
+0008+  0000             ; status register masks
+0009+  0000             MSK_INTRPEND	= $80
+0010+  0000             MSK_EOB		= $40
+0011+  0000             MSK_VFYERR		= $20
+0012+  0000             MSK_RAMSIZE	= $10
+0013+  0000             MSK_CHIPVER	= $0F
+0014+  0000             
+0015+  0000             REU_CTL_REG			= $DF01
+0016+  0000             ; Command register values
+0017+  0000             CMD_EXECUTE	= $80
+0018+  0000             CMD_AUTOLD		= $20
+0019+  0000             CMD_NOFF00		= $10
+0020+  0000             
+0021+  0000             TTC64TOREU		= $00
+0022+  0000             TTREUTOC64		= $01
+0023+  0000             TTSWAP			= $02
+0024+  0000             TTVFY			= $03
+0025+  0000             
+0026+  0000             REU_C64BASEL_REG	= $DF02
+0027+  0000             REU_C64BASEH_REG	= $DF03
+0028+  0000             REU_REUBASEL_REG	= $DF04
+0029+  0000             REU_REUBASEM_REG	= $DF05
+0030+  0000             REU_REUBASEH_REG	= $DF06
+0031+  0000             REU_XFRLENL_REG		= $DF07
+0032+  0000             ; all 8 bits written to this register
+0033+  0000             ;	will be used. when read back
+0034+  0000             ;	only bits 2..0 will be returned
+0035+  0000             ;	with bits 7..3 will be '1'.
+0036+  0000             ; read register REU_EXPHI8_REG to get
+0037+  0000             ;	all i bits
+0038+  0000             REU_XFRLENH_REG		= $DF08
+0039+  0000             REU_IMSK_REG		= $DF09
+0040+  0000             ; interrupt mask register masks
+0041+  0000             MSK_INTRENA	= $80
+0042+  0000             MSK_EOBINTR	= $40
+0043+  0000             MSK_VFYINTR	= $20
+0044+  0000             VAL_NOINTR		= $00
+0045+  0000             
+0046+  0000             REU_ADRCTL_REG		= $DF0A
+0047+  0000             ; address type register values
+0048+  0000             INCBOTH		= $00
+0049+  0000             FIXREU		= $40
+0050+  0000             FIXC64		= $80
+0051+  0000             FIXBOTH		= $C0
+0052+  0000             
+0053+  0000             REU_REUBASESB_REG	= $DF0F
+0054+  0000             
+0055+  0000             REU_ROMLL_REG		= $DF10
+0056+  0000             REU_ROMLH_REG		= $DF11
+0057+  0000             REU_ROMHL_REG		= $DF12
+0058+  0000             REU_ROMHH_REG		= $DF13
+0059+  0000             REU_MEML_REG		= $DF14
+0060+  0000             REU_MEMM_REG		= $DF15
+0061+  0000             REU_MEMH_REG		= $DF16
+0062+  0000             
+0063+  0000             ; reads back all 8 bits written to
+0064+  0000             ;	REU_REUBASEH_REG
+0065+  0000             REU_EXPHI8_REG		= $DF0E
+0066+  0000             REU_SUPERBANK_REG	= $DF0F
+0067+  0000             
+0068+  0000             
+0069+  0000             ; Video peripheral registers
+0070+  0000             VIDSTAT_REG			= $DF20
+0071+  0000             VIDCHAR_REG			= $DF21
+0072+  0000             
+0073+  0000             ;
+0074+  0000             ; selects which of the 32 banks of
+0075+  0000             ;	16 mailbox registers are
+0076+  0000             ;	selected for access at
+0077+  0000             ;	addresses $DF30..$DF3F
+0078+  0000             ;
+0079+  0000             MBOXBANK_REG		= $DF26
+0080+  0000             ; controls the operation of the
+0081+  0000             ;	coprocessor
+0082+  0000             Z80CTL_REG			= $DF27
+0083+  0000             ;
+0084+  0000             ; controls access to the boot ROM
+0085+  0000             ;	and sets the state of EXROM
+0086+  0000             ;	and GAME
+0087+  0000             ;
+0088+  0000             ROMSEL_REG			= $DF28
+0089+  0000             
+0090+  0000             
+0091+  0000             I2C_CMDREG			= $DF2A
+0092+  0000             I2C_CMDNOP				= $00
+0093+  0000             I2C_CMDSTART			= $01
+0094+  0000             I2C_CMDSTOP				= $02
+0095+  0000             I2C_CMDSEND				= $03
+0096+  0000             I2C_CMDRXACK			= $04
+0097+  0000             I2C_CMDRXNACK			= $05
+0098+  0000             ; status bits from the command register
+0099+  0000             I2C_MASK_SFTRDY			= $80
+0100+  0000             I2C_MASK_ACKBIT 		= $40
+0101+  0000             I2C_MASK_CMDBITS 		= $07
+0102+  0000             
+0103+  0000             I2C_DATRDREG		= $DF2B
+0104+  0000             I2C_DATWRREG		= $DF2C
+0105+  0000             
+0106+  0000             
+0107+  0000             FPGAREV_REG			= $DF2E
+0108+  0000             COP_SEL_REG			= $DF2F
+0109+  0000             
+0110+  0000             ; Coprocewssor mailbox registers.
+0111+  0000             ;	These
+0112+  0000             MBOX0_REG			= $DF30
+0113+  0000             MBOX1_REG			= $DF31
+0114+  0000             MBOX2_REG			= $DF32
+0115+  0000             MBOX3_REG			= $DF33
+0116+  0000             MBOX4_REG			= $DF34
+0117+  0000             MBOX5_REG			= $DF35
+0118+  0000             MBOX6_REG			= $DF36
+0119+  0000             MBOX7_REG			= $DF37
+0120+  0000             MBOX8_REG			= $DF38
+0121+  0000             MBOX9_REG			= $DF39
+0122+  0000             MBOX10_REG			= $DF3A
+0123+  0000             MBOX11_REG			= $DF3B
+0124+  0000             MBOX12_REG			= $DF3C
+0125+  0000             MBOX13_REG			= $DF3D
+0126+  0000             MBOX14_REG			= $DF3E
+0127+  0000             MBOX15_REG			= $DF3F
+0128+  0000             
+0129+  0000             
+0130+  0000             
+0131+  0000             ; 6502 reset vector
+0132+  0000             RST_VEC				= $FFFC
+0133+  0000             
+0134+  0000             
+0135+  0000             
+0136+  0000             ; these define veriable locations in memory
+0137+  0000             ;	that is relatively safe in BASIC
+0138+  0000             ptr1	= $FB
+0139+  0000             ptr2	= ptr1 + 2
+0140+  0000             
+0141+  0000             ptr3	= $0340
+0142+  0000             ptr4	= ptr3 + 2
+0143+  0000             
+0144+  0000             dvar1	.equ ptr4 + 2
+0145+  0000             dvar2	.equ dvar1 + 2
+0146+  0000             dvar3	.equ dvar2 + 2
+0147+  0000             dvar4	.equ dvar3 + 2
+0148+  0000             dvar5	.equ dvar4 + 2
+0149+  0000             dvar6	.equ dvar5 + 2
+0150+  0000             dvar7	.equ dvar6 + 2
+0151+  0000             dvar8	.equ dvar7 + 2
+0152+  0000             
+0153+  0000             tmp1	= dvar8 + 2
+0154+  0000             tmp2	= tmp1 + 1
+0155+  0000             tmp3	= tmp2 + 1
+0156+  0000             tmp4	= tmp3 + 1
+0157+  0000             
+0158+  0000             
+0159+  0000             
+0160+  0000             #endif
+0004   0000             #include "../includes/kernal.asm"
+0001+  0000             
+0002+  0000             #ifndef lib_cbm_kernal_a
+0003+  0000             #define lib_cbm_kernal_a
+0004+  0000             
+0005+  0000             ; Taken from the web.
+0006+  0000             ; Sorry, I can't give credit because I don't have the URL anymore.
+0007+  0000             ; There are alternative names for some calls.
+0008+  0000             
+0009+  0000             
+0010+  0000             k_cint		.equ $ff81
+0011+  0000             k_ioinit	.equ $ff84
+0012+  0000             k_ramtas	.equ $ff87
+0013+  0000             k_restor	.equ $ff8a
+0014+  0000             k_vector	.equ $ff8d
+0015+  0000             k_setmsg	.equ $ff90
+0016+  0000             k_secnd		.equ $ff93
+0017+  0000             k_tksa		.equ $ff96
+0018+  0000             k_memtop	.equ $ff99
+0019+  0000             k_membot	.equ $ff9c
+0020+  0000             k_key		.equ $ff9f
+0021+  0000             k_settmo	.equ $ffa2
+0022+  0000             k_iecin		.equ $ffa5
+0023+  0000             k_acptr			.equ $ffa5
+0024+  0000             k_iecout	.equ $ffa8
+0025+  0000             k_ciout			.equ $ffa8
+0026+  0000             k_untalk	.equ $ffab
+0027+  0000             k_untlk			.equ $ffab
+0028+  0000             k_unlisten	.equ $ffae
+0029+  0000             k_unlsn			.equ $ffae
+0030+  0000             k_listen	.equ $ffb1
+0031+  0000             k_listn			.equ $ffb1
+0032+  0000             k_talk		.equ $ffb4
+0033+  0000             k_readss	.equ $ffb7
+0034+  0000             k_setlfs	.equ $ffba
+0035+  0000             k_setnam	.equ $ffbd	; A is length, X is ptr-low, Y is ptr-high
+0036+  0000             k_open		.equ $ffc0
+0037+  0000             k_close		.equ $ffc3
+0038+  0000             k_close_A		.equ $ffc3
+0039+  0000             k_chkin		.equ $ffc6
+0040+  0000             k_chkin_X		.equ $ffc6
+0041+  0000             k_chkout	.equ $ffc9
+0042+  0000             k_chkout_X		.equ $ffc9
+0043+  0000             k_ckout			.equ $ffc9
+0044+  0000             k_clrchn	.equ $ffcc
+0045+  0000             k_clrch			.equ $ffcc
+0046+  0000             k_chrin		.equ $ffcf
+0047+  0000             k_basin			.equ $ffcf
+0048+  0000             k_chrout	.equ $ffd2
+0049+  0000             k_basout		.equ $ffd2
+0050+  0000             k_bsout			.equ $ffd2
+0051+  0000             k_load		.equ $ffd5
+0052+  0000             k_load_AXY		.equ $ffd5	; A means verify, YYXX is desired load address (if channel == 0), returns end+1 in YYXX
+0053+  0000             k_save		.equ $ffd8
+0054+  0000             k_save_AXY		.equ $ffd8	; A is zp address of start ptr(!), YYXX is end address (+1)
+0055+  0000             k_settim	.equ $ffdb
+0056+  0000             k_rdtim		.equ $ffde
+0057+  0000             k_stop		.equ $ffe1
+0058+  0000             k_getin		.equ $ffe4
+0059+  0000             k_get			.equ $ffe4
+0060+  0000             k_clall		.equ $ffe7
+0061+  0000             k_udtim		.equ $ffea
+0062+  0000             k_scrorg	.equ $ffed
+0063+  0000             k_plot		.equ $fff0
+0064+  0000             k_plot_CXY		.equ $fff0	; get/set cursor (to set, clear carry. X/Y are y/x!)
+0065+  0000             k_iobase	.equ $fff3
+0066+  0000             
+0067+  0000             #endif
+0005   0000             
+0006   0000             ; make this an EXROM cart
+0007   0000             #define EXROMCART
+0008   0000             #define INITBASIC
+0009   0000             #include "../includes/fileHeaders.asm"
+0001+  0000             #ifndef FILEHEADERS
+0002+  0000             
+0003+  0000             #define FILEHEADERS
+0004+  0000             
+0005+  0000             
+0006+  0000             ;---------------------------------------------------------------
+0007+  0000             ; These switches control the compilation process.
+0008+  0000             ;	ONLY ONE should be uncommented at a time
+0009+  0000             ;
+0010+  0000             ;---------------------------------------------------------------
+0011+  0000             ; These switches generate cartidge files
+0012+  0000             ;
+0013+  0000             ; uncomment if a VICE compatible cartridge file is
+0014+  0000             ;	to be generated
+0015+  0000             ;#define	EXROMVICECART
+0016+  0000             ;
+0017+  0000             ; uncomment if a standard cartridge file is to be
+0018+  0000             ;	generated
+0019+  0000             ;#define	EXROMCART
+0020+  0000             ;
+0021+  0000             ;---------------------------------------------------------------
+0022+  0000             ; This switch generates a binary file intended to be loaded
+0023+  0000             ;	at $0801 and with that load address prepended
+0024+  0000             ;
+0025+  0000             ;#define	ISDISKFILE
+0026+  0000             
+0027+  0000             
+0028+  0000             I2C_CMD_REG				.equ $DF2A
+0029+  0000             
+0030+  0000             ; I2C commands (bits 2..0)
+0031+  0000             I2CCMD_NOP				.equ $00
+0032+  0000             I2CCMD_START			.equ $01
+0033+  0000             I2CCMD_STOP				.equ $02
+0034+  0000             I2CCMD_SEND				.equ $03
+0035+  0000             I2CCMD_RXACK			.equ $04
+0036+  0000             I2CCMD_RXNAK			.equ $05
+0037+  0000             
+0038+  0000             ; status bit masks
+0039+  0000             I2CMASK_SCLPIN	    .EQU $08
+0040+  0000             I2CMASK_SDAPIN		.EQU $10
+0041+  0000             I2CMASK_ISIDLE		.EQU $20
+0042+  0000             I2CMASK_ACKBIT		.EQU $40
+0043+  0000             I2CMASK_SHFTRDY		.EQU $80
+0044+  0000             
+0045+  0000             
+0046+  0000             I2C_DATRD_REG			.equ $DF2B
+0047+  0000             I2C_DATWR_REG			.equ $DF2C
+0048+  0000             
+0049+  0000             eepromPtr			.equ $FB
+0050+  0000             
+0051+  0000             
+0052+  0000             
+0053+  0000             
+0054+  0000             ;------------------------------------------
+0055+  0000~            #ifdef EXROMVICECART
+0056+  0000~            
+0057+  0000~            ;this is for a 8kB cart!!
+0058+  0000~            	.org $8000 - $50
+0059+  0000~            
+0060+  0000~            	.byte "C64 CARTRIDGE   "
+0061+  0000~            	.byte $00,$00 		;header length
+0062+  0000~            	.byte $00,$40 		;header length
+0063+  0000~            	.word $0001 		;version
+0064+  0000~            	.word $0000 		;crt type
+0065+  0000~            	.byte $00 			;exrom line
+0066+  0000~            	.byte $01 			;game line
+0067+  0000~            	.byte $00,$00,$00,$00,$00,$00 ;unused
+0068+  0000~            nameStart:
+0069+  0000~            	.byte "TEST CART"
+0070+  0000~            nameEnd:
+0071+  0000~            	.fill (32-(nameEnd - nameStart), 0
+0072+  0000~            	;chip packets
+0073+  0000~            	.byte "CHIP"
+0074+  0000~            	.byte $00,$00,$20,$10 ;chip length
+0075+  0000~            	.byte $00,$00 ;chip type
+0076+  0000~            	.byte $00,$00 ;bank
+0077+  0000~            	.byte $80,$00 ;adress
+0078+  0000~            	.byte $20,$00 ;length
+0079+  0000~            
+0080+  0000~            	.org	$8000
+0081+  0000~            
+0082+  0000~            	.word	coldStart					; Cartridge cold-start vector
+0083+  0000~            	.word	warmStart                   ; Cartridge warm-start vector
+0084+  0000~            	.byte	$C3, $C2, $CD, $38, $30		; CBM8O - Autostart key
+0085+  0000~            
+0086+  0000~            coldStart:
+0087+  0000~            ;	KERNAL RESET ROUTINE
+0088+  0000~            	stx $D016				; Turn on VIC for PAL / NTSC check
+0089+  0000~            	jsr $FDA3				; IOINIT - Init CIA chips
+0090+  0000~            	jsr $FD50				; RANTAM - Clear/test system RAM
+0091+  0000~            	jsr $FD15				; RESTOR - Init KERNAL RAM vectors
+0092+  0000~            	jsr $FF5B				; CINT   - Init VIC and screen editor
+0093+  0000~            	cli						; Re-enable IRQ interrupts
+0094+  0000~            
+0095+  0000~            ; The following is required only if BASIC is to be used
+0096+  0000~            ;	BASIC RESET  Routine
+0097+  0000~            	jsr $E453				; Init BASIC RAM vectors
+0098+  0000~            	jsr $E3BF				; Main BASIC RAM Init routine
+0099+  0000~            	jsr $E422				; Power-up message / NEW command
+0100+  0000~            	ldx #$FB
+0101+  0000~            	txs						; Reduce stack pointer for BASIC
+0102+  0000~            
+0103+  0000~            warmStart:
+0104+  0000~            
+0105+  0000             #endif
+0106+  0000             
+0107+  0000             ;----------------------------------------------------------------------
+0108+  0000             #ifdef EXROMCART
+0109+  0000             
+0110+  8000             	.org	$8000
+0111+  8000             
+0112+  8000 09 80       	.word	coldStart					; Cartridge cold-start vector
+0113+  8002 25 80       	.word	warmStart                   ; Cartridge warm-start vector
+0114+  8004 C3 C2 CD 38 	.byte	$C3, $C2, $CD, $38, $30		; CBM8O - Autostart key
+0114+  8008 30 
+0115+  8009             
+0116+  8009             coldStart:
+0117+  8009             ;	KERNAL RESET ROUTINE
+0118+  8009 8E 16 D0    	stx $D016				; Turn on VIC for PAL / NTSC check
+0119+  800C 20 A3 FD    	jsr $FDA3				; IOINIT - Init CIA chips
+0120+  800F 20 50 FD    	jsr $FD50				; RANTAM - Clear/test system RAM
+0121+  8012 20 15 FD    	jsr $FD15				; RESTOR - Init KERNAL RAM vectors
+0122+  8015 20 5B FF    	jsr $FF5B				; CINT   - Init VIC and screen editor
+0123+  8018 58          	cli						; Re-enable IRQ interrupts
+0124+  8019             
+0125+  8019             #ifdef INITBASIC
+0126+  8019             ; The following is required only if BASIC is to be used
+0127+  8019             ;	BASIC RESET  Routine
+0128+  8019 20 53 E4    	jsr $E453				; Init BASIC RAM vectors
+0129+  801C 20 BF E3    	jsr $E3BF				; Main BASIC RAM Init routine
+0130+  801F 20 22 E4    	jsr $E422				; Power-up message / NEW command
+0131+  8022             #endif
+0132+  8022             
+0133+  8022 A2 FB       	ldx #$FB
+0134+  8024 9A          	txs						; Reduce stack pointer for BASIC
+0135+  8025             
+0136+  8025             warmStart:
+0137+  8025             
+0138+  8025             #endif
+0139+  8025             
+0140+  8025             ;----------------------------------------------------------------------
+0141+  8025             ; A RUN header for the file
+0142+  8025             
+0143+  8025             
+0144+  8025~            #ifdef ISDISKFILE
+0145+  8025~            	.org $07FF
+0146+  8025~            	.db $01, $08
+0147+  8025~            	.db $0C,$08,$0A,$00,$9E,$20,$32,$30,$36,$32,$00,$00,$00
+0148+  8025~            
+0149+  8025~            programEntry:
+0150+  8025~            
+0151+  8025             #endif
+0152+  8025             
+0153+  8025             
+0154+  8025             #endif
+0010   8025             
+0011   8025             ; Download the boot program from the EEPROM
+0012   8025             
+0013   8025             ; destination address in C64 memory
+0014   8025 A9 01       	lda 	#$01
+0015   8027 85 FB       	sta 	ptr1
+0016   8029 A9 08       	lda 	#$08
+0017   802B 85 FC       	sta 	ptr1 + 1
+0018   802D             ; move 16384 bytes
+0019   802D A9 40       	lda		#$40
+0020   802F 8D 43 03    	sta		ptr4 + 1
+0021   8032 A9 00       	lda		#$00
+0022   8034 8D 42 03    	sta		ptr4
+0023   8037             
+0024   8037             ;
+0025   8037             ; The boot program is located at $7C000 in
+0026   8037             ;	the EEPROM memory space.
+0027   8037             
+0028   8037             ; send I2C START
+0029   8037 20 7D 80    	jsr		i2cSendStart
+0030   803A             ; send the slave address (write mode)
+0031   803A             ;	and EEPROM address
+0032   803A A9 AE       	lda		#(($07 << 1) | $A0)
+0033   803C 20 99 80    	jsr		i2cSendByte
+0034   803F D0 21       	bne		errorRtn
+0035   8041 A9 C0       	lda		#$C0
+0036   8043 20 99 80    	jsr		i2cSendByte
+0037   8046 D0 1A       	bne		errorRtn
+0038   8048 A9 00       	lda		#$0
+0039   804A 20 99 80    	jsr		i2cSendByte
+0040   804D D0 13       	bne		errorRtn
+0041   804F             ; send re-START
+0042   804F 20 7D 80    	jsr		i2cSendStart
+0043   8052             ; send the slave address (read mode)
+0044   8052             ;	and EEPROM address
+0045   8052 A9 AF       	lda		#(($07 << 1) | $A1)
+0046   8054 20 99 80    	jsr		i2cSendByte
+0047   8057 D0 09       	bne		errorRtn
+0048   8059             
+0049   8059 20 F1 80    	jsr		i2cGetNBytes
+0050   805C 20 8C 80    	jsr		i2cSendStop
+0051   805F             
+0052   805F             ; jump to the downloaded program
+0053   805F 4C 01 08    	jmp		$0801
+0054   8062             
+0055   8062             
+0056   8062             ;--------------------------------------
+0057   8062             ; This section is run if an error during
+0058   8062             ;	the EEPROM access is detected. The
+0059   8062             ;	code issues an I2C STOP command to
+0060   8062             ;	terminate the transaction and then
+0061   8062             ;	downloads a stub program that disables
+0062   8062             ;	the boot ROM and does a cold restart
+0063   8062             ;	of the C64
+0064   8062             ;
+0065   8062             errorRtn:
+0066   8062             ; end the I2C transaction
+0067   8062 20 8C 80    	jsr		i2cSendStop
+0068   8065             
+0069   8065             ;
+0070   8065             ; transfer the reboot routine to $801
+0071   8065             ;	in the C64 main memory and then
+0072   8065             ;	jump to it
+0073   8065             errRtnTest:
+0074   8065 A2 00       	ldx		#$00
+0075   8067             errRtnTestLoop:
+0076   8067 BD 75 80    	lda		errorRtnExit, x
+0077   806A 9D 01 08    	sta		$0801, x
+0078   806D E8          	inx
+0079   806E E0 0A       	cpx		#(errorRtnExitEnd - errorRtnExit + 2)
+0080   8070 D0 F5       	bne		errRtnTestLoop
+0081   8072 4C 01 08    	jmp		$0801
+0082   8075             
+0083   8075             
+0084   8075             
+0085   8075             
+0086   8075             errorRtnExit:
+0087   8075 A9 80       	lda		#$80
+0088   8077 8D 28 DF    	sta		ROMSEL_REG
+0089   807A 6C FC FF    	jmp		(RST_VEC)
+0090   807D             errorRtnExitEnd:
+0091   807D             
+0092   807D             #include "../includes/i2cRtnsX.asm"
+0001+  807D             
+0002+  807D             ;#include "reuPlusDefs.asm"
+0003+  807D             
+0004+  807D             
+0005+  807D             ; ---------------------------------------------------------------
+0006+  807D             ; Send an I2C START command
+0007+  807D             ;
+0008+  807D             ; Inputs:
+0009+  807D             ;	None
+0010+  807D             ;
+0011+  807D             ; Outputs:
+0012+  807D             ;	None
+0013+  807D             ;
+0014+  807D             ; Registers affected:
+0015+  807D             ;	All
+0016+  807D             ; ---------------------------------------------------------------
+0017+  807D             i2cSendStart:
+0018+  807D             ;
+0019+  807D             ; initiate the START command
+0020+  807D A9 01       	lda		#I2C_CMDSTART
+0021+  807F 8D 2A DF    	sta		I2C_CMDREG
+0022+  8082             
+0023+  8082             ; the I2C FSM will reset the command to
+0024+  8082             ;	I2C_CMDNOP when it is done
+0025+  8082             L0001:
+0026+  8082 AD 2A DF    	lda		I2C_CMDREG
+0027+  8085 29 07       	and		#I2C_MASK_CMDBITS
+0028+  8087 C9 00       	cmp		#I2C_CMDNOP
+0029+  8089 D0 F7       	bne		L0001
+0030+  808B 60          	rts
+0031+  808C             
+0032+  808C             
+0033+  808C             ; ---------------------------------------------------------------
+0034+  808C             ; Send an I2C STOP command
+0035+  808C             ;
+0036+  808C             ; Inputs:
+0037+  808C             ;	None
+0038+  808C             ;
+0039+  808C             ; Outputs:
+0040+  808C             ;	None
+0041+  808C             ;
+0042+  808C             ; Registers affected:
+0043+  808C             ;	All
+0044+  808C             ; ---------------------------------------------------------------
+0045+  808C             
+0046+  808C             i2cSendStop:
+0047+  808C             
+0048+  808C             ; initiate the STOP command
+0049+  808C A9 02       	lda		#I2C_CMDSTOP
+0050+  808E 8D 2A DF    	sta		I2C_CMDREG
+0051+  8091             
+0052+  8091             ; the I2C FSM will reset the command to
+0053+  8091             ;	I2C_CMDNOP when it is done
+0054+  8091             L0002:
+0055+  8091 AD 2A DF    	lda		I2C_CMDREG
+0056+  8094 29 07       	and		#I2C_MASK_CMDBITS
+0057+  8096 D0 F9       	bne		L0002
+0058+  8098 60          	rts
+0059+  8099             
+0060+  8099             ; ---------------------------------------------------------------
+0061+  8099             ; Send one byte over the I2C bus. This routine returns the state
+0062+  8099             ;	of the ACK bit
+0063+  8099             ;
+0064+  8099             ; Inputs:
+0065+  8099             ;	A	byte to send
+0066+  8099             ;
+0067+  8099             ; Outputs:
+0068+  8099             ;	A	$00 - ACK received, else ACK not received
+0069+  8099             ;
+0070+  8099             ; Registers affected:
+0071+  8099             ;	All
+0072+  8099             ;
+0073+  8099             ; ---------------------------------------------------------------
+0074+  8099             
+0075+  8099             i2cSendByte:
+0076+  8099 A2 03       	ldx		#I2C_CMDSEND
+0077+  809B 8E 2A DF    	stx		I2C_CMDREG
+0078+  809E             
+0079+  809E             i2cSendByteN:
+0080+  809E 8D 2C DF    	sta		I2C_DATWRREG
+0081+  80A1             
+0082+  80A1             L0003:
+0083+  80A1 AD 2A DF    	lda		I2C_CMDREG
+0084+  80A4 29 80       	and		#I2C_MASK_SFTRDY
+0085+  80A6 F0 F9       	beq		L0003
+0086+  80A8             
+0087+  80A8 A2 00       	ldx		#$00
+0088+  80AA AD 2A DF    	lda		I2C_CMDREG
+0089+  80AD 29 40       	and		#I2C_MASK_ACKBIT
+0090+  80AF 60          	rts
+0091+  80B0             
+0092+  80B0             
+0093+  80B0             ; ---------------------------------------------------------------
+0094+  80B0             ; Send N bytes (up to 256) over the I2C bus.
+0095+  80B0             ;
+0096+  80B0             ; Inputs:
+0097+  80B0             ;	tmp1	number of bytes to send
+0098+  80B0             ;	ptr1	send buffer address
+0099+  80B0             ;
+0100+  80B0             ; Outputs:
+0101+  80B0             ;	A	$00 - all is OK, else an error occurred during the transfer
+0102+  80B0             ;
+0103+  80B0             ; Registers affected:
+0104+  80B0             ;	All
+0105+  80B0             ;	ptr1
+0106+  80B0             ;
+0107+  80B0             ; ---------------------------------------------------------------
+0108+  80B0             ;
+0109+  80B0             i2cSendNBytes:
+0110+  80B0             
+0111+  80B0             ; set up the I2C controller
+0112+  80B0 A9 03       	lda		#I2C_CMDSEND
+0113+  80B2 8D 2A DF    	sta		I2C_CMDREG
+0114+  80B5             
+0115+  80B5             ; (ptr1), y will now point to the first
+0116+  80B5             ; bytes to be transferred
+0117+  80B5 A0 00       	ldy		#$00
+0118+  80B7             
+0119+  80B7             L0004B:
+0120+  80B7             ; get a data byte to send
+0121+  80B7 B1 FB       	lda		(ptr1), y
+0122+  80B9             ; send it
+0123+  80B9 20 9E 80    	jsr 	i2cSendByteN
+0124+  80BC D0 08       	bne		L0004A	; there is an error
+0125+  80BE             
+0126+  80BE             ; next byte
+0127+  80BE C8          	iny
+0128+  80BF             ; update the byte counter
+0129+  80BF CE 54 03    	dec		tmp1
+0130+  80C2             ; back around for more bytes.
+0131+  80C2 D0 F3       	bne		L0004B
+0132+  80C4             
+0133+  80C4 A9 00       	lda		#$00
+0134+  80C6             L0004A:
+0135+  80C6 A2 00       	ldx		#$00
+0136+  80C8 60          	rts
+0137+  80C9             
+0138+  80C9             ; ---------------------------------------------------------------
+0139+  80C9             ; Receive one byte on the I2C bus and respond with an ACK
+0140+  80C9             ;
+0141+  80C9             ; Inputs:
+0142+  80C9             ;	None
+0143+  80C9             ;
+0144+  80C9             ; Outputs:
+0145+  80C9             ;	A	the byte received
+0146+  80C9             ;
+0147+  80C9             ; Registers affected
+0148+  80C9             ;	All
+0149+  80C9             ; ---------------------------------------------------------------
+0150+  80C9             ;
+0151+  80C9             i2cGetByteAck:
+0152+  80C9             
+0153+  80C9 A2 04       	ldx		#I2C_CMDRXACK
+0154+  80CB 8E 2A DF    	stx		I2C_CMDREG
+0155+  80CE             
+0156+  80CE             i2cGetByteAckN:
+0157+  80CE AD 2B DF    	lda		I2C_DATRDREG
+0158+  80D1 AA          	tax
+0159+  80D2             
+0160+  80D2             L0005:
+0161+  80D2 AD 2A DF    	lda		I2C_CMDREG
+0162+  80D5 29 80       	and		#I2C_MASK_SFTRDY
+0163+  80D7 F0 F9       	beq		L0005
+0164+  80D9             
+0165+  80D9 8A          	txa
+0166+  80DA A2 00       	ldx		#$00
+0167+  80DC 60          	rts
+0168+  80DD             
+0169+  80DD             
+0170+  80DD             ; ---------------------------------------------------------------
+0171+  80DD             ; Receive one byte on the I2C bus and respond with an NACK
+0172+  80DD             ;
+0173+  80DD             ; Inputs:
+0174+  80DD             ;	None
+0175+  80DD             ;
+0176+  80DD             ; Outputs:
+0177+  80DD             ;	A	the byte received
+0178+  80DD             ;
+0179+  80DD             ; Registers affected
+0180+  80DD             ;	All
+0181+  80DD             ; ---------------------------------------------------------------
+0182+  80DD             
+0183+  80DD             i2cGetByteNack:
+0184+  80DD             
+0185+  80DD A2 05       	ldx		#I2C_CMDRXNACK
+0186+  80DF 8E 2A DF    	stx		I2C_CMDREG
+0187+  80E2 AD 2B DF    	lda		I2C_DATRDREG
+0188+  80E5 AA          	tax
+0189+  80E6             
+0190+  80E6             L0005GBN:
+0191+  80E6 AD 2A DF    	lda		I2C_CMDREG
+0192+  80E9 29 80       	and		#I2C_MASK_SFTRDY
+0193+  80EB F0 F9       	beq		L0005GBN
+0194+  80ED             
+0195+  80ED 8A          	txa
+0196+  80EE A2 00       	ldx		#$00
+0197+  80F0 60          	rts
+0198+  80F1             
+0199+  80F1             
+0200+  80F1             ; ---------------------------------------------------------------
+0201+  80F1             ; Get N bytes over the I2C bus.
+0202+  80F1             ;
+0203+  80F1             ; Inputs:
+0204+  80F1             ;	ptr1			Pointer to the receive buffer
+0205+  80F1             ;	ptr4			The byte count (65536 bytes max)
+0206+  80F1             ;
+0207+  80F1             ; Outputs:
+0208+  80F1             ;	A	$00 - all is OK, else an error occurred during the transfer
+0209+  80F1             ;
+0210+  80F1             ; Registers affected:
+0211+  80F1             ;	All
+0212+  80F1             ;	ptr1
+0213+  80F1             ;
+0214+  80F1             ; ---------------------------------------------------------------
+0215+  80F1             ;
+0216+  80F1             i2cGetNBytes:
+0217+  80F1             
+0218+  80F1             ; set up the I2C controller
+0219+  80F1 A9 04       	lda		#I2C_CMDRXACK
+0220+  80F3 8D 2A DF    	sta		I2C_CMDREG
+0221+  80F6             
+0222+  80F6             ; do a dummy read. this shifts in the first
+0223+  80F6             ; actual data byte from the I2C peripheral
+0224+  80F6 20 CE 80    	jsr		i2cGetByteAckN
+0225+  80F9             
+0226+  80F9             ; (ptr1), y will now point to buffer location
+0227+  80F9             ; where the read byte will be put
+0228+  80F9 A0 00       	ldy		#$00
+0229+  80FB             
+0230+  80FB             L0006B:
+0231+  80FB             ; decrement the byte count and check if it
+0232+  80FB             ;	is zero
+0233+  80FB AD 42 03    	lda		ptr4
+0234+  80FE D0 08       	bne 	i2cGNBdecbc
+0235+  8100 AD 43 03    	lda		ptr4 + 1
+0236+  8103 F0 14       	beq 	exit			; the byte counter is zero, so we are done
+0237+  8105 CE 43 03    	dec		ptr4 + 1
+0238+  8108             i2cGNBdecbc:
+0239+  8108 CE 42 03    	dec 	ptr4
+0240+  810B             
+0241+  810B             ; read the byte in the I2C FSM receive register
+0242+  810B             ; and get the next
+0243+  810B 20 CE 80    	jsr 	i2cGetByteAckN
+0244+  810E 91 FB       	sta		(ptr1), y
+0245+  8110             
+0246+  8110             ; increment the buffer pointer
+0247+  8110 E6 FB       	inc 	ptr1
+0248+  8112 D0 02       	bne		i2cGNBincptr
+0249+  8114 E6 FC       	inc		ptr1+1
+0250+  8116             i2cGNBincptr:
+0251+  8116             
+0252+  8116             
+0253+  8116             
+0254+  8116             ; back around for more bytes.
+0255+  8116 4C FB 80    	jmp		L0006B
+0256+  8119             
+0257+  8119             exit:
+0258+  8119             ; do a dummy read with a NACK to end the transaction
+0259+  8119 20 DD 80    	jsr		i2cGetByteNack
+0260+  811C A9 00       	lda		#$00
+0261+  811E A2 00       	ldx		#$00
+0262+  8120             
+0263+  8120 60          	rts
+0264+  8121             
+0265+  8121             
+0093   8121             
+0094   8121             
+0095   8121             	.end
+tasm: Number of errors = 0
