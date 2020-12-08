@@ -24,7 +24,7 @@ The main functions of the custom carrier board are to provide:
 This board provides:
 1. A battery backed real time clock using a Maxim DS3231SN#-ND RTC device using an I2C interface. The RTC has an onboard 32.768kHz crystal.
 2. 512kBytes of EEPROM using 2@ AT24CM02-SSHM-T I2C EEPROMs.
-3. A simple 80 column text video output using standard 640X480 VGA. The terminal is a modified version of Grant Searle's terminal provided in his Multicomp project.
+3. A simple 80 column monochrome text video output using standard 640X480 VGA. The terminal is a modified version of Grant Searle's terminal provided in his Multicomp project.
 
 **REU Functionality**
 
