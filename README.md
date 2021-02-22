@@ -1,3 +1,5 @@
+![ReuPlus2c](https://user-images.githubusercontent.com/66132635/108757849-ffb5dd00-750f-11eb-941d-fe4a19843d64.jpg)
+
 # REUPlusC2
 This project implements an open source REU for the Commodore 64.
 
