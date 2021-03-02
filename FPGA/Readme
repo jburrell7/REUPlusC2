@@ -1,2 +1,4 @@
 Reu2c5_22Feb2021.qar is the quartus archive of the FPGA files. This is here for convenience of Quartus users.
 Reu2c5TopFpga.zip - all FPGA design file in source form
+
+The 2March files contain the changes made to comply better with the VICE REU regression tests.
