@@ -2,4 +2,5 @@ PCB_REUSDCRTC_2C5.zip contains all of the Circuit Studio files as well as a copy
 ReuPlus2CPcbFiles.zip contains the BONM and Gerber files as well as some other output files. These are duplicates of what is in PCB_REUSDCRTC_2C5.zip
 REUPlusPcbLibs.zip contains the PCB and SCH libraries used by Circuit Studio
 
-The 2March file contains the PCB libraries, Circuit Studio files, and the manufacturing files in one zip. This seemed like a better idea
+The 2March file contains the PCB libraries, Circuit Studio files, and the manufacturing files in one zip. This seemed like a better idea.
+NOTE: there are NO changes to the PCB between this version and the original version.
