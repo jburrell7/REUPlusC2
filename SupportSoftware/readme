@@ -1,0 +1,4 @@
+
+These files can be used to perform fast checks on the RTC and SD Card Interface
+sdcRd64 will perform raw reads on the SD card sectors. It is a very bare bones program
+setClockMain will allow reading and setting of the RTC. The program is written in C and the source code can be made available, if desired.
