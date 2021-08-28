@@ -11,7 +11,7 @@ The hardware consists of two PCBs.
 
 The development board uses an Intel EP2C5T144C8N FPGA and provides the FPGA and its configurator, one push button, three LEDs and the voltage converters for the FPGA power supplies. The board also provides a total of 86 3.3V TTL compatible I/O pins, some of which are dedicated and cannot be used by peripherals. The board is modified by:
 1. Removing the LEDs connected to FPGA pins 3, 7, and 9.
-2. Moving the RC network on pin 73.
+2. Removing the RC network on pin 73.
 3. Removing the resistors on pins 26, 27, 80, and 81.
 
 A web page that is a good summary of this board can be found at:
